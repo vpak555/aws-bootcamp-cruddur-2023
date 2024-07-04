@@ -1,0 +1,23 @@
+version: "3.8"  # Specify the version of Docker Compose syntax being used
+services:  # Define the services that make up your application
+  backend-flask:  # Service definition for the backend Flask application
+    environment:  # Set environment variables for the backend service
+      FRONTEND_URL: "https://3000-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}"  # Define FRONTEND_URL environment variable
+      BACKEND_URL: "https://4567-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}"  # Define BACKEND_URL environment variable
+    build: ./backend-flask  # Build context for the backend service (path to Dockerfile or build context)
+    ports:  # Expose ports for the backend service
+      - "4567:4567"  # Map port 4567 on the host to port 4567 on the container
+    volumes:  # Mount volumes for the backend service
+      - ./backend-flask:/backend-flask  # Mount the current directory to /backend-flask in the container
+  frontend-react-js:  # Service definition for the frontend React.js application
+    environment:  # Set environment variables for the frontend service
+      REACT_APP_BACKEND_URL: "https://4567-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}"  # Define REACT_APP_BACKEND_URL environment variable
+    build: ./frontend-react-js  # Build context for the frontend service (path to Dockerfile or build context)
+    ports:  # Expose ports for the frontend service
+      - "3000:3000"  # Map port 3000 on the host to port 3000 on the container
+    volumes:  # Mount volumes for the frontend service
+      - ./frontend-react-js:/frontend-react-js  # Mount the current directory to /frontend-react-js in the container
+networks:  # Define networks for the services
+  internal-network:  # Internal network definition
+    driver: bridge  # Use the bridge network driver (default for most use cases)
+    name: cruddur  # Specify the name of the network
