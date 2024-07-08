@@ -4,6 +4,10 @@ services:  # Define the services that make up your application
     environment:  # Set environment variables for the backend service
       FRONTEND_URL: "https://3000-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}"  # URL for the frontend, dynamic based on Gitpod workspace
       BACKEND_URL: "https://4567-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}"  # URL for the backend, dynamic based on Gitpod workspace
+      OTEL_SERVICE_NAME: "backend-flask"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "https://api.honeycomb.io"
+      OTEL_EXPORTER_OTLP_HEADERS: "x-honeycomb-team=${HONEYCOMB_API_KEY}"
     build: ./backend-flask  # Build context for the backend service (path to Dockerfile or build context)
     ports:  # Expose ports for the backend service
       - "4567:4567"  # Map port 4567 on the host to port 4567 on the container
