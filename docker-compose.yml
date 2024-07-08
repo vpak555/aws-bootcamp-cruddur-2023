@@ -8,6 +8,8 @@ services:  # Define the services that make up your application
       OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
       OTEL_EXPORTER_OTLP_ENDPOINT: "https://api.honeycomb.io"
       OTEL_EXPORTER_OTLP_HEADERS: "x-honeycomb-team=${HONEYCOMB_API_KEY}"
+      AWS_XRAY_URL: "*4567-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}*"
+      AWS_XRAY_DAEMON_ADDRESS: "xray-daemon:2000"
     build: ./backend-flask  # Build context for the backend service (path to Dockerfile or build context)
     ports:  # Expose ports for the backend service
       - "4567:4567"  # Map port 4567 on the host to port 4567 on the container
@@ -44,6 +46,16 @@ services:  # Define the services that make up your application
     volumes:  # Mount volumes for the DynamoDB local service
       - "./docker/dynamodb:/home/dynamodblocal/data"  # Use a local directory for DynamoDB data
     working_dir: /home/dynamodblocal  # Set the working directory inside the container
+  xray-daemon:
+    image: "amazon/aws-xray-daemon"
+    environment:
+      AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
+      AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
+      AWS_REGION: "us-east-1"
+    command:
+      - "xray -o -b xray-daemon:2000"
+    ports:
+      - 2000:2000/udp
 
 volumes:  # Define named volumes for persistent storage
   db:  # Named volume for PostgreSQL data
