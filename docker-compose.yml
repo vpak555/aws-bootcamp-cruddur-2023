@@ -1,54 +1,60 @@
-version: "3.8"  # Specify the version of Docker Compose syntax being used
-services:  # Define the services that make up your application
-  backend-flask:  # Service definition for the backend Flask application
-    environment:  # Set environment variables for the backend service
-      FRONTEND_URL: "https://3000-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}"  # URL for the frontend, dynamic based on Gitpod workspace
-      BACKEND_URL: "https://4567-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}"  # URL for the backend, dynamic based on Gitpod workspace
+version: "3.8"
+services:
+  backend-flask:
+    environment:
+      FRONTEND_URL: "${FRONTEND_URL}"
+      BACKEND_URL: "${BACKEND_URL}"
       OTEL_SERVICE_NAME: "backend-flask"
       OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
       OTEL_EXPORTER_OTLP_ENDPOINT: "https://api.honeycomb.io"
       OTEL_EXPORTER_OTLP_HEADERS: "x-honeycomb-team=${HONEYCOMB_API_KEY}"
-      AWS_XRAY_URL: "*4567-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}*"
+      AWS_XRAY_URL: "*localhost:5000*"
       AWS_XRAY_DAEMON_ADDRESS: "xray-daemon:2000"
       AWS_DEFAULT_REGION: "${AWS_DEFAULT_REGION}"
       AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
       AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
-    build: ./backend-flask  # Build context for the backend service (path to Dockerfile or build context)
-    ports:  # Expose ports for the backend service
-      - "4567:4567"  # Map port 4567 on the host to port 4567 on the container
-    volumes:  # Mount volumes for the backend service
-      - ./backend-flask:/backend-flask  # Mount the current directory to /backend-flask in the container
+      ROLLBAR_ACCESS_TOKEN: "${ROLLBAR_ACCESS_TOKEN}"
+    build: ./backend-flask
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend-flask:/backend-flask
 
-  frontend-react-js:  # Service definition for the frontend React.js application
-    environment:  # Set environment variables for the frontend service
-      REACT_APP_BACKEND_URL: "https://4567-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}"  # URL for the backend, dynamic based on Gitpod workspace
-    build: ./frontend-react-js  # Build context for the frontend service (path to Dockerfile or build context)
-    ports:  # Expose ports for the frontend service
-      - "3000:3000"  # Map port 3000 on the host to port 3000 on the container
-    volumes:  # Mount volumes for the frontend service
-      - ./frontend-react-js:/frontend-react-js  # Mount the current directory to /frontend-react-js in the container
+  frontend-react-js:
+    environment:
+      REACT_APP_BACKEND_URL: "${REACT_APP_BACKEND_URL}"
+      REACT_APP_AWS_PROJECT_REGION: "${REACT_AWS_PROJECT_REGION}"
+      REACT_APP_CLIENT_ID: "${REACT_APP_CLIENT_ID}"
+      REACT_APP_AWS_USER_POOLS_ID: "${REACT_APP_AWS_USER_POOLS_ID}"
+      REACT_APP_AWS_COGNITO_REGION: "${REACT_APP_AWS_COGNITO_REGION}"
+    build: ./frontend-react-js
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend-react-js:/frontend-react-js
 
-  db:  # Service definition for a PostgreSQL database
-    image: postgres:13-alpine  # Use the official PostgreSQL image with Alpine Linux
-    restart: always  # Always restart the container if it stops
-    environment:  # Set environment variables for the PostgreSQL service
-      - POSTGRES_USER=postgres  # Define the PostgreSQL user
-      - POSTGRES_PASSWORD=password  # Define the PostgreSQL password
-    ports:  # Expose ports for the database service
-      - '5432:5432'  # Map port 5432 on the host to port 5432 on the container
-    volumes:  # Mount volumes for the database service
-      - db:/var/lib/postgresql/data  # Use a named volume for persistent storage
+  db:
+    image: postgres:13-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+    ports:
+      - '5432:5432'
+    volumes:
+      - db:/var/lib/postgresql/data
 
-  dynamodb-local:  # Service definition for a local instance of DynamoDB
-    user: root  # Run the container as root user
-    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data"  # Command to run DynamoDB local
-    image: "amazon/dynamodb-local:latest"  # Use the latest DynamoDB local image from Amazon
-    container_name: dynamodb-local  # Name the container "dynamodb-local"
-    ports:  # Expose ports for the DynamoDB local service
-      - "8000:8000"  # Map port 8000 on the host to port 8000 on the container
-    volumes:  # Mount volumes for the DynamoDB local service
-      - "./docker/dynamodb:/home/dynamodblocal/data"  # Use a local directory for DynamoDB data
-    working_dir: /home/dynamodblocal  # Set the working directory inside the container
+  dynamodb-local:
+    user: root
+    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data"
+    image: "amazon/dynamodb-local:latest"
+    container_name: dynamodb-local
+    ports:
+      - "8000:8000"
+    volumes:
+      - "./docker/dynamodb:/home/dynamodblocal/data"
+    working_dir: /home/dynamodblocal
+
   xray-daemon:
     image: "amazon/aws-xray-daemon"
     environment:
@@ -60,11 +66,11 @@ services:  # Define the services that make up your application
     ports:
       - 2000:2000/udp
 
-volumes:  # Define named volumes for persistent storage
-  db:  # Named volume for PostgreSQL data
-    driver: local  # Use the local driver for the volume
+volumes:
+  db:
+    driver: local
 
-networks:  # Define networks for the services
-  internal-network:  # Internal network definition
-    driver: bridge  # Use the bridge network driver (default for most use cases)
-    name: cruddur  # Specify the name of the network
+networks:
+  internal-network:
+    driver: bridge
+    name: cruddur
