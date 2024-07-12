@@ -10,12 +10,8 @@ import MessageGroupsPage from './pages/MessageGroupsPage';
 import MessageGroupPage from './pages/MessageGroupPage';
 import ConfirmationPage from './pages/ConfirmationPage';
 import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Amplify } from "aws-amplify";
-
-import {
-  createBrowserRouter,
-  RouterProvider
-} from "react-router-dom";
 
 Amplify.configure({
   aws_project_region: process.env.REACT_APP_AWS_PROJECT_REGION,
@@ -24,56 +20,29 @@ Amplify.configure({
   aws_user_pools_web_client_id: process.env.REACT_APP_CLIENT_ID,
   oauth: {},
   Auth: {
-    region: process.env.REACT_APP_AWS_PROJECT_REGION, // REQUIRED - Amazon Cognito Region
-    userPoolId: process.env.REACT_APP_AWS_USER_POOLS_ID, // OPTIONAL - Amazon Cognito User Pool ID
-    userPoolWebClientId: process.env.REACT_APP_CLIENT_ID, // OPTIONAL - Amazon Cognito Web Client ID (26-char alphanumeric string)
+    region: process.env.REACT_APP_AWS_PROJECT_REGION,
+    userPoolId: process.env.REACT_APP_AWS_USER_POOLS_ID,
+    userPoolWebClientId: process.env.REACT_APP_CLIENT_ID,
   },
 });
 
-const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <HomeFeedPage />
-  },
-  {
-    path: "/notifications",
-    element: <NotificationsFeedPage />
-  },
-  {
-    path: "/@:handle",
-    element: <UserFeedPage />
-  },
-  {
-    path: "/messages",
-    element: <MessageGroupsPage />
-  },
-  {
-    path: "/messages/@:handle",
-    element: <MessageGroupPage />
-  },
-  {
-    path: "/signup",
-    element: <SignupPage />
-  },
-  {
-    path: "/signin",
-    element: <SigninPage />
-  },
-  {
-    path: "/confirm",
-    element: <ConfirmationPage />
-  },
-  {
-    path: "/forgot",
-    element: <RecoverPage />
-  }
-]);
+
 
 function App() {
   return (
-    <>
-      <RouterProvider router={router} />
-    </>
+    <Router>
+      <Routes>
+        <Route path="/" element={<HomeFeedPage />} />
+        <Route path="/notifications" element={<NotificationsFeedPage />} />
+        <Route path="/:handle" element={<UserFeedPage />} />
+        <Route path="/messages" element={<MessageGroupsPage />} />
+        <Route path="/messages/:handle" element={<MessageGroupPage />} />
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/signin" element={<SigninPage />} />
+        <Route path="/confirm" element={<ConfirmationPage />} />
+        <Route path="/forgot" element={<RecoverPage />} />
+      </Routes>
+    </Router>
   );
 }
 

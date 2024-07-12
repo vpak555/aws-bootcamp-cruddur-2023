@@ -1,81 +1,54 @@
-import './NotificationsFeedPage.css';
-import React from "react";
+import React, { useState, useEffect } from "react";
+import "./NotificationsFeedPage.css";
 
-import DesktopNavigation  from '../components/DesktopNavigation';
-import DesktopSidebar     from '../components/DesktopSidebar';
-import ActivityFeed from '../components/ActivityFeed';
-import ActivityForm from '../components/ActivityForm';
-import ReplyForm from '../components/ReplyForm';
-
-// [TODO] Authenication
-import Cookies from 'js-cookie'
+import ActivityFeed from "../components/ActivityFeed";
+import ActivityForm from "../components/ActivityForm";
+import DesktopNavigation from "../components/DesktopNavigation";
+import DesktopSidebar from "../components/DesktopSidebar";
+import ReplyForm from "../components/ReplyForm";
+import useAuth from "../hooks/useAuth";
+import useFetch from "../hooks/useFetch";
 
 export default function NotificationsFeedPage() {
-  const [activities, setActivities] = React.useState([]);
-  const [popped, setPopped] = React.useState(false);
-  const [poppedReply, setPoppedReply] = React.useState(false);
-  const [replyActivity, setReplyActivity] = React.useState({});
-  const [user, setUser] = React.useState(null);
-  const dataFetchedRef = React.useRef(false);
+  const [activities, setActivities] = useState([]);
+  const [popped, setPopped] = useState(false);
+  const [poppedReply, setPoppedReply] = useState(false);
+  const [replyActivity, setReplyActivity] = useState({});
+  const user = useAuth();
+  const backend_url = `${process.env.REACT_APP_BACKEND_URL}/api/activities/notifications`;
+  const { data } = useFetch(backend_url);
 
-  const loadData = async () => {
-    try {
-      const backend_url = `${process.env.REACT_APP_BACKEND_URL}/api/activities/notifications`
-      const res = await fetch(backend_url, {
-        method: "GET"
-      });
-      let resJson = await res.json();
-      if (res.status === 200) {
-        setActivities(resJson)
-      } else {
-        console.log(res)
-      }
-    } catch (err) {
-      console.log(err);
+  useEffect(() => {
+    if (data) {
+      setActivities(data);
     }
-  };
-
-  const checkAuth = async () => {
-    console.log('checkAuth')
-    // [TODO] Authenication
-    if (Cookies.get('user.logged_in')) {
-      setUser({
-        display_name: Cookies.get('user.name'),
-        handle: Cookies.get('user.username')
-      })
-    }
-  };
-
-  React.useEffect(()=>{
-    //prevents double call
-    if (dataFetchedRef.current) return;
-    dataFetchedRef.current = true;
-
-    loadData();
-    checkAuth();
-  }, [])
+  }, [data]);
 
   return (
     <article>
-      <DesktopNavigation user={user} active={'notifications'} setPopped={setPopped} />
-      <div className='content'>
-        <ActivityForm  
+      <DesktopNavigation
+        user={user}
+        active={"notifications"}
+        setPopped={setPopped}
+      />
+      <div className="content">
+        <ActivityForm
           popped={popped}
-          setPopped={setPopped} 
-          setActivities={setActivities} 
+          setPopped={setPopped}
+          setActivities={setActivities}
         />
-        <ReplyForm 
-          activity={replyActivity} 
-          popped={poppedReply} 
-          setPopped={setPoppedReply} 
-          setActivities={setActivities} 
-          activities={activities} 
+        <ReplyForm
+          activity={replyActivity}
+          popped={poppedReply}
+          setPopped={setPoppedReply}
+          setActivities={setActivities}
+          activities={activities}
         />
-        <ActivityFeed 
-          title="Notifications" 
-          setReplyActivity={setReplyActivity} 
-          setPopped={setPoppedReply} 
-          activities={activities} 
+        <ActivityFeed
+          title="Notifications"
+          setReplyActivity={setReplyActivity}
+          setPopped={setPoppedReply}
+          activities={activities}
         />
       </div>
       <DesktopSidebar user={user} />
